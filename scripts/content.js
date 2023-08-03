@@ -50,20 +50,32 @@ function replaceSpotifyLinks() {
 	return url.includes("spotify.com");
   }
 
-  function extractArtistName(url) {
-	// Implement a function to extract the artist name from the Spotify link URL.
-	// You can use string manipulation or regular expressions based on the URL pattern.
-	// For example, if the URL is in the format: "https://open.spotify.com/artist/ARTIST_ID",
-	// you can extract the artist name by splitting the URL and getting the last part.
-	const parts = url.split("/");
-	const artistID = parts[parts.length - 1];
-	// Implement logic to fetch the artist name from the artistID using Spotify Web API or any other method.
-	// Return the artist name.
-	return "Artist Name"; // Replace this with the actual artist name.
+  function extractArtistName(spotifyTrackUrl) {
+	const trackId = spotifyTrackUrl.split("/").pop();
+
+	// Make a GET request to the Spotify API
+	fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+	headers: {
+		Authorization: `Bearer ${accessToken}`,
+	},
+	})
+	.then((response) => response.json())
+	.then((data) => {
+		// Extract the artist and song names from the response
+		const artist = data.artists[0].name;
+		const songName = data.name;
+
+		// Output the results
+		console.log("Artist:", artist);
+		console.log("Song Name:", songName);
+	})
+	.catch((error) => {
+		console.error("Error:", error);
+	});
   }
 
   // Call the replaceSpotifyLinks function when the page is loaded.
   window.addEventListener("load", replaceSpotifyLinks);
 
 
-  setInterval(replaceSpotifyLinks, 5000); // 5000 milliseconds = 5 seconds
+  setInterval(replaceSpotifyLinks, 10000); // 5000 milliseconds = 5 seconds
