@@ -11,5 +11,24 @@ document.addEventListener("DOMContentLoaded", function() {
 	//	chrome.tabs.sendMessage(tabs[0].id, { action: "performAction" });
 	//  });
 		console.log("popup.js");
+
+		chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+			const activeTab = tabs[0];
+			chrome.tabs.sendMessage(activeTab.id, { action: "runScript" }, function (response) {
+			  // Handle the response from the content script if needed
+			});
+		  });
+
 	});
-  });
+
+});
+
+//$("#myButton").click(function() {
+//    // Code to execute when the button is clicked
+//    console.log("Button clicked!");
+//});
+
+
+  window.onload = function (e) {
+	console.log("window.onload");
+	  };

@@ -1,10 +1,6 @@
 // Afficher une alerte pour tester si le contenu du script est injecté correctement sur les pages web.
 //alert("Extension Chrome fonctionne !");
 
-// Modifier le contenu de la page pour tester l'injection de code.
-document.fonts = "ui-rounded";
-
-
 document.addEventListener("DOMContentLoaded", function() {
 	replaceSpotifyLinks();
   });
@@ -28,8 +24,6 @@ function replaceSpotifyLinks() {
 	//  console.log(div);
 	//  div.style.backgroundColor = 'blue'; // Replace 'yellow' with your desired background color
 	//});
-
-	console.log("function replace");
 
 	linkElements.forEach((element) => {
 	//  console.log(element);
@@ -78,4 +72,15 @@ function replaceSpotifyLinks() {
   window.addEventListener("load", replaceSpotifyLinks);
 
 
-  setInterval(replaceSpotifyLinks, 10000); // 5000 milliseconds = 5 seconds
+  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	if (request.action === "runScript") {
+	  // Your code to manipulate the DOM of the active tab
+	  // For example, you can use document.querySelector and other DOM methods here
+	  console.log("content.js");
+	  replaceSpotifyLinks();
+	  sendResponse({ message: "Content script executed" });
+	}
+  });
+
+
+//  setInterval(replaceSpotifyLinks, 10000);
