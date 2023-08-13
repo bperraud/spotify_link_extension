@@ -2,8 +2,15 @@
 //alert("Extension Chrome fonctionne !");
 
 
-document.addEventListener("DOMContentLoaded", function() {
-	replaceSpotifyLinks();
+document.addEventListener("DOMContentLoaded", async function() {
+	console.log("DOM fully loaded and parsed");
+
+	const accessToken = await getAccessToken();
+	if (!accessToken) {
+		console.error("Error getting access token");
+		return;
+	}
+	chrome.storage.local.set({ 'accessToken': accessToken });
   });
 
 
@@ -31,37 +38,9 @@ const getAccessToken = async () => {
   }
 };
 
-// Make API request to retrieve track information
-const getTrackInfo = async (trackId, accessToken) => {
-  try {
-    const response = await fetch(
-      `https://api.spotify.com/v1/tracks/${trackId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      }
-    );
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error getting track information:', error);
-    return null;
-  }
-};
-
-//chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-//	if (message.action === "performAction") {
-//	  // Your function to perform when the message with action "performAction" is received
-//	  replaceSpotifyLinks();
-//	}
-//});
-
 window.
 	addEventListener("message", function (e) {
 		console.log("message received");
-		replaceSpotifyLinks();
 	});
 
 function isSpotifyLink(url) {
@@ -75,45 +54,49 @@ async function replaceSpotifyLinks() {
 	const linkElements = document.querySelectorAll('a[role="link"]');
 
 	for (const element of linkElements) {
-	  const linkURL = element.href;
+	  const linkURL = element.textContent;
 	  if (isSpotifyLink(linkURL)) {
 		console.log("Spotify link found: " + linkURL);
 		const artistName = await extractArtistName(linkURL);
 		if (artistName) {
-		  element.textContent = artistName;
+			console.log("artistName found: " + artistName);
+		}
+		else
+		{
+			console.log("artistName not found");
 		}
 	  }
 	}
 }
 
   async function extractArtistName(spotifyTrackUrl) {
-	const trackId = spotifyTrackUrl.split("/").pop();
+	const replacedString = spotifyTrackUrl.replace(/%/g, '/');
+	const trackId = replacedString.split("/").pop();
 
 	console.log("trackId: " + trackId);
 
-	const accessToken = await getAccessToken();
-	if (!accessToken) {
-		console.error("Error getting access token");
-		return;
-	}
+	const accessToken = await new Promise((resolve) => {
+		chrome.storage.local.get('accessToken', function(result) {
+		  const token = result.accessToken;
+		  resolve(token);
+		});
+	  });
 
+
+	console.log("accessToken: " + accessToken);
+	// Now you have the accessToken
 	try {
 		const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 		},
-		});
+	});
 
 		if (response.ok) {
 			const data = await response.json();
 			// Extract the artist and song names from the response
-			const artist = data.artists[0].name;
-			const songName = data.name;
-
-			// Output the results
-			console.log("Artist:", artist);
-			console.log("Song Name:", songName);
-
+			const artist = await data.artists[0].name;
+			const songName = await data.name;
 			return artist + " - " + songName;
 		} else {
 			throw new Error("Error fetching track information");
@@ -123,11 +106,8 @@ async function replaceSpotifyLinks() {
 		console.error("Error getting track information:", error);
 		return null;
 	}
+
 }
-
-
-  // Call the replaceSpotifyLinks function when the page is loaded.
-  window.addEventListener("load", replaceSpotifyLinks);
 
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
