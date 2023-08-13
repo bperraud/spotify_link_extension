@@ -67,16 +67,10 @@ async function replaceSpotifyLinks() {
 
 function addImage(imageUrl, targetElement) {
 	var imgElement = document.createElement('img');
-
     // Set the source (URL) of the image
     imgElement.src = imageUrl; // Replace with the actual image URL
-
     // Append the <img> element to the <span> element
-
-	console.log("width of span: " + targetElement.offsetWidth);
-
 	imgElement.style.width = targetElement.offsetWidth + 'px';
-
     targetElement.appendChild(imgElement);
 }
 
