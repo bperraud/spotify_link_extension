@@ -1,6 +1,3 @@
-// Afficher une alerte pour tester si le contenu du script est injecté correctement sur les pages web.
-//alert("Extension Chrome fonctionne !");
-
 
 document.addEventListener("DOMContentLoaded", async function() {
 	console.log("DOM fully loaded and parsed");
@@ -59,10 +56,8 @@ async function replaceSpotifyLinks() {
 		console.log("Spotify link found: " + linkURL);
 		const artistName = await extractArtistName(linkURL);
 		if (artistName) {
-			console.log("artistName found: " + artistName);
 			element.textContent = artistName;
 		}
-
 	  }
 	}
 }
@@ -71,8 +66,6 @@ async function replaceSpotifyLinks() {
 	const replacedString = spotifyTrackUrl.replace(/%/g, '/');
 	const trackId = replacedString.split("/").pop();
 
-	console.log("trackId: " + trackId);
-
 	const accessToken = await new Promise((resolve) => {
 		chrome.storage.local.get('accessToken', function(result) {
 		  const token = result.accessToken;
@@ -80,8 +73,6 @@ async function replaceSpotifyLinks() {
 		});
 	  });
 
-
-	console.log("accessToken: " + accessToken);
 	// Now you have the accessToken
 	try {
 		const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
@@ -105,15 +96,12 @@ async function replaceSpotifyLinks() {
 		console.error("Error getting track information:", error);
 		return null;
 	}
-
 }
-
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	if (request.action === "runScript") {
 	  // Your code to manipulate the DOM of the active tab
 	  // For example, you can use document.querySelector and other DOM methods here
-	  console.log("content.js");
 	  replaceSpotifyLinks();
 	  sendResponse({ message: "Content script executed" });
 	}
