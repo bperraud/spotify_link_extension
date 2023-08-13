@@ -1,7 +1,5 @@
 
 document.addEventListener("DOMContentLoaded", async function() {
-	console.log("DOM fully loaded and parsed");
-
 	const accessToken = await getAccessToken();
 	if (!accessToken) {
 		console.error("Error getting access token");
@@ -35,8 +33,7 @@ const getAccessToken = async () => {
   }
 };
 
-window.
-	addEventListener("message", function (e) {
+window.addEventListener("message", function (e) {
 		console.log("message received");
 	});
 
@@ -54,15 +51,36 @@ async function replaceSpotifyLinks() {
 	  const linkURL = element.textContent;
 	  if (isSpotifyLink(linkURL)) {
 		console.log("Spotify link found: " + linkURL);
-		const artistName = await extractArtistName(linkURL);
-		if (artistName) {
-			element.textContent = artistName;
+		const data = await extractDataLink(linkURL);
+		if (data) {
+			const artist = data.artists[0].name;
+			const songName = data.name;
+			const imageUrl = data.album.images[0].url;
+			element.textContent = artist + " - " + songName;
+			console.log("Image URL: " + imageUrl);
+			addImage(imageUrl, element)
 		}
 	  }
 	}
 }
 
-  async function extractArtistName(spotifyTrackUrl) {
+
+function addImage(imageUrl, targetElement) {
+	var imgElement = document.createElement('img');
+
+    // Set the source (URL) of the image
+    imgElement.src = imageUrl; // Replace with the actual image URL
+
+    // Append the <img> element to the <span> element
+
+	console.log("width of span: " + targetElement.offsetWidth);
+
+	imgElement.style.width = targetElement.offsetWidth + 'px';
+
+    targetElement.appendChild(imgElement);
+}
+
+async function extractDataLink(spotifyTrackUrl) {
 	const replacedString = spotifyTrackUrl.replace(/%/g, '/');
 	const trackId = replacedString.split("/").pop();
 
@@ -84,10 +102,7 @@ async function replaceSpotifyLinks() {
 		if (response.ok) {
 			const data = await response.json();
 			// Extract the artist and song names from the response
-			const artist = await data.artists[0].name;
-			const songName = await data.name;
-			const imageUrl = data.album.images[0].url;
-			return artist + " - " + songName;
+			return data;
 		} else {
 			throw new Error("Error fetching track information");
 		}
