@@ -35,6 +35,7 @@ const getAccessToken = async () => {
 
 window.addEventListener("message", function (e) {
 		console.log("message received");
+		//replaceSpotifyLinks();
 	});
 
 function isSpotifyLink(url) {
@@ -43,24 +44,24 @@ function isSpotifyLink(url) {
 	return url.includes("spotify.com");
   }
 
-
 async function replaceSpotifyLinks() {
 	const linkElements = document.querySelectorAll('a[role="link"]');
-
 	for (const element of linkElements) {
-	  const linkURL = element.textContent;
-	  if (isSpotifyLink(linkURL)) {
-		console.log("Spotify link found: " + linkURL);
-		const data = await extractDataLink(linkURL);
-		if (data) {
-			const artist = data.artists[0].name;
-			const songName = data.name;
-			const imageUrl = data.album.images[0].url;
-			element.textContent = artist + " - " + songName;
-			console.log("Image URL: " + imageUrl);
-			addImage(imageUrl, element)
+		var hrefValue = element.getAttribute('href');
+		if (hrefValue.startsWith("/messages/"))
+			continue;
+		const linkURL = element.textContent;
+		if (isSpotifyLink(linkURL)) {
+			console.log("Spotify link found: " + linkURL);
+			const data = await extractDataLink(linkURL);
+			if (data) {
+				const artist = data.artists[0].name;
+				const songName = data.name;
+				const imageUrl = data.album.images[0].url;
+				element.textContent = artist + " - " + songName;
+				addImage(imageUrl, element)
+			}
 		}
-	  }
 	}
 }
 
@@ -115,3 +116,32 @@ async function extractDataLink(spotifyTrackUrl) {
 	  sendResponse({ message: "Content script executed" });
 	}
   });
+
+  // Function to observe DOM changes and detect chat windows
+  function onElementChange(mutationsList, observer) {
+	for (const mutation of mutationsList) {
+	  if (mutation.type === 'childList' || mutation.type === 'attributes') {
+		// Check if the specific element has been modified
+		if (mutation.target.getAttribute('data-scope') === 'messages_table') {
+		  // Trigger your desired function here
+		  console.log('Target element has changed:', mutation.target);
+		  // Call your function here
+		  // yourFunction();
+		}
+	  }
+	}
+  }
+
+// Select the target nodes (elements with data-scope="messages_table")
+const targetNodes = document.querySelectorAll('[data-scope="messages_table"]');
+
+// Create a new MutationObserver instance for each target node
+targetNodes.forEach(targetNode => {
+  const observer = new MutationObserver(onElementChange);
+  // Start observing the target node with the specified options
+  observer.observe(targetNode, observerOptions);
+});
+
+
+
+
